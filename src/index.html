@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>App Check Web testing page</title>
+
+  <style type="text/css">
+    body {
+      margin: 0;
+    }
+
+    .main {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .row {
+      width: 100%;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: flex-start;
+      margin: 2em 0;
+    }
+
+    .button {
+      height: 5em;
+      width: 13em;
+    }
+
+    p.text {
+      width: 50vw;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="main">
+    <div class="row">
+      <button id="button1" class="button">Click here</button>
+      <button id="button2" class="button">Click one time</button>
+    </div>
+    <div class="row">
+      <p id="textbox" class="text">Output goes here...</p>
+    </div>
+  </div>
+
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      initializeAppCheck,
+      ReCaptchaEnterpriseProvider,
+      getToken,
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAm5B-AHAt57BdUq79jUvtlfVlJtpFGvvU",
+      authDomain: "ftcs-production.firebaseapp.com",
+      databaseURL: "https://ftcs-production.firebaseio.com",
+      projectId: "ftcs-production",
+      storageBucket: "ftcs-production.appspot.com",
+      messagingSenderId: "763041550784",
+      appId: "1:763041550784:web:84e994dc2c193df6df7825",
+      measurementId: "G-2D9KD0STZ7"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+
+    // Initialize App Check
+    const appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider('6LfEN_8pAAAAAN3HLc3f_n4dyHD_fkQ2IcXbgRmf'),
+      isTokenAutoRefreshEnabled: true // Set to true to allow auto-refresh.
+    })
+
+    const textBox = document.getElementById('textbox')
+
+    const callApiWithAppCheckExample = (url, forceRefresh = false) => async () => {
+      let appCheckTokenResponse
+      try {
+        appCheckTokenResponse = await getToken(appCheck, forceRefresh)
+      } catch (err) {
+        console.error(err)
+        return
+      }
+
+      // Include the App Check token with requests to your server.
+      const apiResponse = await fetch(url, {
+        headers: {
+          'X-Firebase-AppCheck': appCheckTokenResponse.token,
+        }
+      })
+      const resText = await apiResponse.text()
+
+      // Handle response from your backend.
+      textBox.innerHTML = resText
+    };
+
+    const button1 = document.getElementById('button1')
+    button1.onclick = callApiWithAppCheckExample('/endpoint1')
+
+    const button2 = document.getElementById('button2')
+    button2.onclick = callApiWithAppCheckExample('/endpoint2', true)
+  </script>
+</body>
+</html>
