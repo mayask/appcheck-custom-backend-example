@@ -75,6 +75,7 @@
     const textBox = document.getElementById('textbox')
 
     const callApiWithAppCheckExample = (url, forceRefresh = false) => async () => {
+      // Generate attestation token
       let appCheckTokenResponse
       try {
         appCheckTokenResponse = await getToken(appCheck, forceRefresh)
